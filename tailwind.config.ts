@@ -79,12 +79,18 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "dash": {
+          "to": {
+            strokeDashoffset: "-30",
+          }
+        }
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-down": "fade-down 0.5s ease-out",
+        "dash": "dash 20s linear infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;

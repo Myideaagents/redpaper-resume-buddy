@@ -9,12 +9,12 @@ interface FeatureProps {
 
 export const Feature = ({ title, description, icon, className }: FeatureProps) => {
   return (
-    <div className={cn("p-6 rounded-lg bg-white shadow-lg", className)}>
-      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
+    <div className={cn("p-8 rounded-lg bg-white shadow-lg hover:shadow-xl transition-shadow", className)}>
+      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-accent/10 text-accent mb-6">
         {icon}
       </div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
+      <h3 className="text-xl font-semibold mb-3">{title}</h3>
+      <p className="text-gray-600 leading-relaxed">{description}</p>
     </div>
   );
 };

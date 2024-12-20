@@ -1,63 +1,87 @@
-import { FileText, User, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/auth";
-import { toast } from "@/hooks/use-toast";
+import { LayoutPanelLeft, User, LogOut } from "lucide-react";
 
 export const DashboardSidebar = () => {
+  const [resumes, setResumes] = useState([]);
   const navigate = useNavigate();
 
-  const handleSignOut = async () => {
+  useEffect(() => {
+    loadResumes();
+  }, []);
+
+  const loadResumes = async () => {
     try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
-      });
-      navigate("/");
+      const { data, error } = await supabase
+        .from('resumes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setResumes(data || []);
     } catch (error) {
-      toast({
-        title: "Error signing out",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error loading resumes:', error);
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/signin');
+  };
+
   return (
-    <div className="w-64 h-screen bg-white border-r flex flex-col">
-      <div className="p-4">
-        <h2 className="text-2xl font-bold text-accent">RedPaper</h2>
+    <div className="w-64 bg-white border-r h-screen flex flex-col">
+      <div className="p-4 border-b">
+        <Link to="/" className="flex items-center space-x-2">
+          <span className="text-2xl font-bold text-accent">RedPaper</span>
+        </Link>
       </div>
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          <li>
-            <Link
-              to="/dashboard"
-              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/10 text-gray-700"
-            >
-              <FileText className="w-5 h-5" />
-              <span>My Resumes</span>
+
+      <div className="flex-1 overflow-auto p-4">
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-gray-500 mb-4">MENU</h2>
+          <nav className="space-y-2">
+            <Link to="/dashboard">
+              <Button variant="ghost" className="w-full justify-start">
+                <LayoutPanelLeft className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
             </Link>
-          </li>
-          <li>
-            <Link
-              to="/dashboard/profile"
-              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/10 text-gray-700"
-            >
-              <User className="w-5 h-5" />
-              <span>Profile</span>
+            <Link to="/dashboard/profile">
+              <Button variant="ghost" className="w-full justify-start">
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
             </Link>
-          </li>
-        </ul>
-      </nav>
+          </nav>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-gray-500 mb-4">SAVED RESUMES</h2>
+          <div className="space-y-2">
+            {resumes.map((resume) => (
+              <Button
+                key={resume.id}
+                variant="ghost"
+                className="w-full justify-start text-sm truncate"
+                onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
+              >
+                {resume.title}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="p-4 border-t">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-700 hover:text-accent"
+          className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
           onClick={handleSignOut}
         >
-          <LogOut className="w-5 h-5 mr-2" />
+          <LogOut className="w-4 h-4 mr-2" />
           Sign Out
         </Button>
       </div>

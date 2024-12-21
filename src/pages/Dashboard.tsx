@@ -34,16 +34,31 @@ export default function Dashboard() {
     });
 
     try {
-      // TODO: Implement OpenAI integration here
-      // For now, just copy the original resume as a placeholder
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-      setGeneratedResume(resume);
+      const response = await fetch(
+        'https://txbvgwrqqznojrpxurss.supabase.co/functions/v1/generate-resume',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ resume, jobDescription }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate resume');
+      }
+
+      const data = await response.json();
+      setGeneratedResume(data.generatedResume);
       setShowConfetti(true);
       toast({
         title: "Success!",
         description: "Your resume has been optimized.",
       });
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Error",
         description: "Failed to generate resume. Please try again.",

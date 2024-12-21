@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DashboardSidebar } from "@/components/DashboardSidebar";
+import { ResumeSidebar } from "@/components/ResumeSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -66,7 +66,7 @@ export default function Profile() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <DashboardSidebar />
+      <ResumeSidebar />
       <div className="flex-1 overflow-auto">
         <div className="p-8">
           <div className="max-w-2xl mx-auto">

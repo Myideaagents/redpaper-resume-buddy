@@ -8,7 +8,7 @@ import { supabase } from "@/lib/auth";
 import Index from "./pages/Index";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import Dashboard from "./pages/Dashboard";
+import Resumes from "./pages/Resumes";
 import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
@@ -52,15 +52,15 @@ const App = () => (
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route
-            path="/dashboard"
+            path="/resumes"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <Resumes />
               </PrivateRoute>
             }
           />
           <Route
-            path="/dashboard/profile"
+            path="/profile"
             element={
               <PrivateRoute>
                 <Profile />

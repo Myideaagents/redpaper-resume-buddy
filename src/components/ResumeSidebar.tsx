@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/auth";
-import { LayoutPanelLeft, User, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 
-export const DashboardSidebar = () => {
+export const ResumeSidebar = () => {
   const [resumes, setResumes] = useState([]);
   const navigate = useNavigate();
 
@@ -41,32 +41,23 @@ export const DashboardSidebar = () => {
 
       <div className="flex-1 overflow-auto p-4">
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-gray-500 mb-4">MENU</h2>
-          <nav className="space-y-2">
-            <Link to="/dashboard/profile">
-              <Button variant="ghost" className="w-full justify-start">
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </Button>
-            </Link>
-            <Link to="/dashboard">
-              <Button variant="ghost" className="w-full justify-start">
-                <LayoutPanelLeft className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-            </Link>
-          </nav>
+          <Link to="/profile">
+            <Button variant="ghost" className="w-full justify-start">
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
+          </Link>
         </div>
 
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-gray-500 mb-4">SAVED RESUMES</h2>
+          <h2 className="text-sm font-semibold text-gray-500 mb-4">MY RESUMES</h2>
           <div className="space-y-2">
             {resumes.map((resume) => (
               <Button
                 key={resume.id}
                 variant="ghost"
                 className="w-full justify-start text-sm truncate"
-                onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
+                onClick={() => navigate(`/resumes/${resume.id}`)}
               >
                 {resume.title}
               </Button>

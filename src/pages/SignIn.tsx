@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { signIn } from "@/lib/auth";
 
 export default function SignIn() {
@@ -21,13 +21,22 @@ export default function SignIn() {
         title: "Success!",
         description: "You have successfully signed in.",
       });
-      navigate("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Invalid email or password.",
-        variant: "destructive",
-      });
+      navigate("/resumes");
+    } catch (error: any) {
+      // Check if the error is due to invalid credentials
+      if (error.message.includes("invalid_credentials")) {
+        toast({
+          title: "Invalid Credentials",
+          description: "The email or password you entered is incorrect.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to sign in. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -63,6 +72,16 @@ export default function SignIn() {
           >
             {loading ? "Signing in..." : "Sign In"}
           </Button>
+          <div className="text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Button
+              variant="link"
+              className="p-0 text-accent hover:text-accent/90"
+              onClick={() => navigate("/signup")}
+            >
+              Sign Up
+            </Button>
+          </div>
         </form>
       </div>
     </div>

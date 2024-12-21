@@ -22,12 +22,22 @@ export default function SignUp() {
         description: "Please check your email to verify your account.",
       });
       navigate("/signin");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create account. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      // Check if the error is due to existing user
+      if (error.message.includes("user_already_exists")) {
+        toast({
+          title: "Account Already Exists",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+        setTimeout(() => navigate("/signin"), 2000); // Redirect to signin after 2 seconds
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to create account. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -63,6 +73,16 @@ export default function SignUp() {
           >
             {loading ? "Creating account..." : "Sign Up"}
           </Button>
+          <div className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Button
+              variant="link"
+              className="p-0 text-accent hover:text-accent/90"
+              onClick={() => navigate("/signin")}
+            >
+              Sign In
+            </Button>
+          </div>
         </form>
       </div>
     </div>

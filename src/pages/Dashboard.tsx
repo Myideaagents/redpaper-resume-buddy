@@ -7,11 +7,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { FileUp, Download, Save, RefreshCw } from "lucide-react";
 import { supabase } from "@/lib/auth";
+import { Confetti } from "@/components/Confetti";
 
 export default function Dashboard() {
   const [resume, setResume] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [generatedResume, setGeneratedResume] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
 
   const handleGenerateResume = async () => {
@@ -24,15 +27,31 @@ export default function Dashboard() {
       return;
     }
 
-    // Placeholder for OpenAI integration
+    setIsGenerating(true);
     toast({
       title: "Generating resume...",
       description: "Please wait while we optimize your resume.",
     });
 
-    // TODO: Implement OpenAI integration here
-    // For now, just copy the original resume as a placeholder
-    setGeneratedResume(resume);
+    try {
+      // TODO: Implement OpenAI integration here
+      // For now, just copy the original resume as a placeholder
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      setGeneratedResume(resume);
+      setShowConfetti(true);
+      toast({
+        title: "Success!",
+        description: "Your resume has been optimized.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSaveResume = async () => {
@@ -82,7 +101,7 @@ export default function Dashboard() {
             direction="horizontal"
             className="h-full rounded-lg border"
           >
-            <ResizablePanel defaultSize={50}>
+            <ResizablePanel defaultSize={50} className="min-h-[calc(100vh-2rem)]">
               <div className="h-full p-6">
                 <Tabs defaultValue="resume" className="h-full">
                   <TabsList>
@@ -90,21 +109,25 @@ export default function Dashboard() {
                     <TabsTrigger value="job">Job Description</TabsTrigger>
                   </TabsList>
                   <TabsContent value="resume" className="h-[calc(100%-40px)]">
-                    <Textarea
-                      placeholder="Paste your current resume here..."
-                      className="h-full min-h-[500px] resize-none"
-                      value={resume}
-                      onChange={(e) => setResume(e.target.value)}
-                    />
-                    <Button variant="outline" className="mt-4">
-                      <FileUp className="w-4 h-4 mr-2" />
-                      Upload Resume
-                    </Button>
+                    <div className="space-y-4">
+                      <Textarea
+                        placeholder="Paste your current resume here..."
+                        className="h-[calc(100vh-300px)] min-h-[500px] resize-none"
+                        value={resume}
+                        onChange={(e) => setResume(e.target.value)}
+                      />
+                      <div className="flex justify-between items-center">
+                        <Button variant="outline" className="w-full">
+                          <FileUp className="w-4 h-4 mr-2" />
+                          Upload Resume
+                        </Button>
+                      </div>
+                    </div>
                   </TabsContent>
                   <TabsContent value="job" className="h-[calc(100%-40px)]">
                     <Textarea
                       placeholder="Paste the job description here..."
-                      className="h-full min-h-[500px] resize-none"
+                      className="h-[calc(100vh-300px)] min-h-[500px] resize-none"
                       value={jobDescription}
                       onChange={(e) => setJobDescription(e.target.value)}
                     />
@@ -115,7 +138,7 @@ export default function Dashboard() {
             
             <ResizableHandle withHandle />
             
-            <ResizablePanel defaultSize={50}>
+            <ResizablePanel defaultSize={50} className="min-h-[calc(100vh-2rem)]">
               <div className="h-full p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">Generated Resume</h2>
@@ -124,9 +147,10 @@ export default function Dashboard() {
                       variant="outline" 
                       onClick={handleGenerateResume}
                       className="bg-accent hover:bg-accent/90"
+                      disabled={isGenerating}
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Generate
+                      <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                      {isGenerating ? 'Generating...' : 'Generate'}
                     </Button>
                     <Button 
                       variant="outline"
@@ -148,7 +172,7 @@ export default function Dashboard() {
                 </div>
                 <Textarea
                   placeholder="Your optimized resume will appear here..."
-                  className="h-[calc(100%-60px)] min-h-[500px] resize-none"
+                  className="h-[calc(100vh-300px)] min-h-[500px] resize-none transition-all duration-500 ease-in-out"
                   value={generatedResume}
                   onChange={(e) => setGeneratedResume(e.target.value)}
                 />
@@ -157,6 +181,7 @@ export default function Dashboard() {
           </ResizablePanelGroup>
         </div>
       </div>
+      {showConfetti && <Confetti />}
     </div>
   );
 }

@@ -43,16 +43,16 @@ export const DashboardSidebar = () => {
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-gray-500 mb-4">MENU</h2>
           <nav className="space-y-2">
-            <Link to="/dashboard">
-              <Button variant="ghost" className="w-full justify-start">
-                <LayoutPanelLeft className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-            </Link>
             <Link to="/dashboard/profile">
               <Button variant="ghost" className="w-full justify-start">
                 <User className="w-4 h-4 mr-2" />
                 Profile
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button variant="ghost" className="w-full justify-start">
+                <LayoutPanelLeft className="w-4 h-4 mr-2" />
+                Dashboard
               </Button>
             </Link>
           </nav>

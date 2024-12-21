@@ -14,18 +14,8 @@ serve(async (req) => {
   try {
     const { resume, jobDescription } = await req.json()
 
-    const prompt = `As an expert resume writer, optimize the following resume for the given job description. 
-    Make the resume more relevant and impactful while maintaining truthfulness and professional tone.
-    
-    Original Resume:
-    ${resume}
-    
-    Job Description:
-    ${jobDescription}
-    
-    Please provide an optimized version of the resume that better aligns with this job description.`
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // First, generate the optimized resume
+    const resumeResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
@@ -34,23 +24,78 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an expert resume writer who helps optimize resumes for specific job descriptions.' },
-          { role: 'user', content: prompt }
+          {
+            role: 'system',
+            content: 'You are an expert resume writer who helps optimize resumes for specific job descriptions.'
+          },
+          {
+            role: 'user',
+            content: `Please optimize this resume for the given job description. Make it more relevant and impactful while maintaining truthfulness and professional tone.
+            
+            Resume:
+            ${resume}
+            
+            Job Description:
+            ${jobDescription}
+            
+            Please provide an optimized version of the resume that better aligns with this job description.`
+          }
         ],
       }),
     })
 
-    const data = await response.json()
-    const generatedResume = data.choices[0].message.content
+    const resumeData = await resumeResponse.json()
+    const generatedResume = resumeData.choices[0].message.content
+
+    // Then, generate interview questions
+    const questionsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert interviewer who creates relevant technical and behavioral questions based on resumes and job descriptions.'
+          },
+          {
+            role: 'user',
+            content: `Based on this optimized resume and job description, generate 10 relevant interview questions that the candidate should prepare for.
+            
+            Optimized Resume:
+            ${generatedResume}
+            
+            Job Description:
+            ${jobDescription}
+            
+            Please provide 10 specific interview questions that combine technical and behavioral aspects relevant to this position.`
+          }
+        ],
+      }),
+    })
+
+    const questionsData = await questionsResponse.json()
+    const interviewQuestions = questionsData.choices[0].message.content
+      .split('\n')
+      .filter(line => line.trim())
+      .slice(0, 10)
+
+    console.log('Successfully generated resume and interview questions')
 
     return new Response(
-      JSON.stringify({ generatedResume }),
+      JSON.stringify({ 
+        generatedResume,
+        interviewQuestions
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to generate resume' }),
+      JSON.stringify({ error: 'Failed to generate resume and questions' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

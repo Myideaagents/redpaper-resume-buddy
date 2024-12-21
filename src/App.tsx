@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Resumes from "./pages/Resumes";
+import ResumeResults from "./pages/ResumeResults";
 import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,14 @@ const App = () => (
             element={
               <PrivateRoute>
                 <Resumes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/resume-results"
+            element={
+              <PrivateRoute>
+                <ResumeResults />
               </PrivateRoute>
             }
           />

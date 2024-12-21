@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { ResumeSidebar } from "@/components/ResumeSidebar";
-import { ResumeEditor } from "@/components/ResumeEditor";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/auth";
-import { Confetti } from "@/components/Confetti";
 
 export default function Resumes() {
   const [resume, setResume] = useState("");
   const [jobDescription, setJobDescription] = useState("");
-  const [generatedResume, setGeneratedResume] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleGenerateResume = async () => {
     if (!resume || !jobDescription) {
@@ -30,36 +30,24 @@ export default function Resumes() {
     });
 
     try {
-      const response = await fetch(
-        'https://txbvgwrqqznojrpxurss.supabase.co/functions/v1/generate-resume',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ resume, jobDescription }),
-        }
-      );
+      const response = await supabase.functions.invoke('generate-resume', {
+        body: { resume, jobDescription }
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate resume');
-      }
-
-      const data = await response.json();
-      setGeneratedResume(data.generatedResume);
-      setShowConfetti(true);
+      if (response.error) throw new Error(response.error.message);
       
-      // Scroll to the generated resume
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: 'smooth'
+      const data = response.data;
+      
+      // Navigate to results page with the generated content
+      navigate('/resume-results', { 
+        state: { 
+          originalResume: resume,
+          jobDescription,
+          generatedResume: data.generatedResume,
+          interviewQuestions: data.interviewQuestions 
+        } 
       });
       
-      toast({
-        title: "Success!",
-        description: "Your resume has been optimized.",
-      });
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -72,60 +60,42 @@ export default function Resumes() {
     }
   };
 
-  const handleSaveResume = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase.from('resumes').insert({
-        user_id: user.id,
-        original_resume: resume,
-        job_description: jobDescription,
-        generated_resume: generatedResume,
-        title: `Resume for ${jobDescription.slice(0, 50)}...`,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Your resume has been saved.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save resume. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDownload = () => {
-    const element = document.createElement("a");
-    const file = new Blob([generatedResume], { type: "text/plain" });
-    element.href = URL.createObjectURL(file);
-    element.download = "optimized-resume.txt";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
-
   return (
     <div className="flex h-screen bg-gray-50">
       <ResumeSidebar />
-      <ResumeEditor
-        resume={resume}
-        jobDescription={jobDescription}
-        generatedResume={generatedResume}
-        isGenerating={isGenerating}
-        onResumeChange={setResume}
-        onJobDescriptionChange={setJobDescription}
-        onGeneratedResumeChange={setGeneratedResume}
-        onGenerate={handleGenerateResume}
-        onSave={handleSaveResume}
-        onDownload={handleDownload}
-      />
-      {showConfetti && <Confetti />}
+      <div className="flex-1 overflow-hidden">
+        <div className="grid grid-cols-2 h-full">
+          <div className="p-6 border-r border-gray-200">
+            <h2 className="text-2xl font-semibold mb-4">Your Resume</h2>
+            <Textarea
+              placeholder="Paste your current resume here..."
+              className="h-[calc(100vh-200px)] resize-none"
+              value={resume}
+              onChange={(e) => setResume(e.target.value)}
+            />
+          </div>
+          
+          <div className="p-6">
+            <h2 className="text-2xl font-semibold mb-4">Job Description</h2>
+            <Textarea
+              placeholder="Paste the job description here..."
+              className="h-[calc(100vh-200px)] resize-none"
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200 flex justify-center">
+          <Button 
+            className="w-64 bg-accent hover:bg-accent/90"
+            onClick={handleGenerateResume}
+            disabled={isGenerating}
+          >
+            {isGenerating ? 'Generating...' : 'Generate Optimized Resume'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

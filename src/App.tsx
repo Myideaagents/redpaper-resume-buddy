@@ -32,15 +32,32 @@ const PrivateRoute = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+      </div>
+    );
   }
 
   if (!user) {
-    return <Navigate to="/signin" />;
+    return <Navigate to="/signin" replace />;
   }
 
   return children;
 };
+
+const NotFound = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen">
+    <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
+    <p className="text-gray-600 mb-8">The page you're looking for doesn't exist.</p>
+    <button
+      onClick={() => window.location.href = '/'}
+      className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent/90 transition-colors"
+    >
+      Go Home
+    </button>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -76,6 +93,7 @@ const App = () => (
               </PrivateRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

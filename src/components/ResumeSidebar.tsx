@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/auth";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, FileText } from "lucide-react";
 
 export const ResumeSidebar = () => {
   const [resumes, setResumes] = useState([]);
@@ -50,8 +50,11 @@ export const ResumeSidebar = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-gray-500 mb-4">MY RESUMES</h2>
-          <div className="space-y-2">
+          <Button variant="ghost" className="w-full justify-start">
+            <FileText className="w-4 h-4 mr-2" />
+            My Resumes
+          </Button>
+          <div className="space-y-2 mt-2">
             {resumes.map((resume) => (
               <Button
                 key={resume.id}

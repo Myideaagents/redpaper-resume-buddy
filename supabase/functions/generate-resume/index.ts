@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { resume, jobDescription } = await req.json()
 
-    // First, generate the optimized resume
+    // Generate the optimized resume
     const resumeResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -26,11 +26,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert resume writer who helps optimize resumes for specific job descriptions.'
+            content: 'You are an expert resume writer. Format the resume in a clean, professional way without any stars or dashes. Use proper spacing and sections.'
           },
           {
             role: 'user',
-            content: `Please optimize this resume for the given job description. Make it more relevant and impactful while maintaining truthfulness and professional tone.
+            content: `Please optimize this resume for the given job description. Make it more relevant and impactful while maintaining a clean, professional format.
             
             Resume:
             ${resume}
@@ -47,7 +47,7 @@ serve(async (req) => {
     const resumeData = await resumeResponse.json()
     const generatedResume = resumeData.choices[0].message.content
 
-    // Then, generate interview questions
+    // Generate interview questions with answers
     const questionsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -59,11 +59,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert interviewer who creates relevant technical and behavioral questions based on resumes and job descriptions.'
+            content: 'Generate 10 interview questions with detailed answers based on the resume and job description. Format each as a JSON object with "question" and "answer" fields.'
           },
           {
             role: 'user',
-            content: `Based on this optimized resume and job description, generate 10 relevant interview questions that the candidate should prepare for.
+            content: `Based on this optimized resume and job description, generate 10 relevant interview questions with detailed answers.
             
             Optimized Resume:
             ${generatedResume}
@@ -71,24 +71,19 @@ serve(async (req) => {
             Job Description:
             ${jobDescription}
             
-            Please provide 10 specific interview questions that combine technical and behavioral aspects relevant to this position.`
+            Please provide 10 specific interview questions with answers in JSON format.`
           }
         ],
       }),
     })
 
     const questionsData = await questionsResponse.json()
-    const interviewQuestions = questionsData.choices[0].message.content
-      .split('\n')
-      .filter(line => line.trim())
-      .slice(0, 10)
-
-    console.log('Successfully generated resume and interview questions')
+    const interviewQA = JSON.parse(questionsData.choices[0].message.content)
 
     return new Response(
       JSON.stringify({ 
         generatedResume,
-        interviewQuestions
+        interviewQA
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

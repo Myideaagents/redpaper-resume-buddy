@@ -26,11 +26,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert resume writer. Format the resume in a clean, professional way without any stars or dashes. Use proper spacing and sections.'
+            content: 'You are an expert resume writer. Format the resume in a clean, professional way. Do not use any stars, asterisks, or dashes. Use proper spacing and clear section headers. Use line breaks for separation instead of special characters.'
           },
           {
             role: 'user',
-            content: `Please optimize this resume for the given job description. Make it more relevant and impactful while maintaining a clean, professional format.
+            content: `Please optimize this resume for the given job description. Make it more relevant and impactful while maintaining a clean, professional format without any special characters or symbols.
             
             Resume:
             ${resume}
@@ -59,26 +59,36 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Generate 10 interview questions with detailed answers based on the resume and job description. Format each as a JSON object with "question" and "answer" fields.'
+            content: 'Generate 5 specific interview questions with detailed answers based on the resume and job description. Each question should be relevant to the candidate\'s experience and the job requirements. Format as an array of objects with "question" and "answer" fields.'
           },
           {
             role: 'user',
-            content: `Based on this optimized resume and job description, generate 10 relevant interview questions with detailed answers.
+            content: `Based on this resume and job description, generate 5 relevant interview questions with detailed answers that would help prepare for the interview.
             
-            Optimized Resume:
+            Resume:
             ${generatedResume}
             
             Job Description:
             ${jobDescription}
             
-            Please provide 10 specific interview questions with answers in JSON format.`
+            Format the response as a JSON array of objects, each with "question" and "answer" fields.`
           }
         ],
       }),
     })
 
     const questionsData = await questionsResponse.json()
-    const interviewQA = JSON.parse(questionsData.choices[0].message.content)
+    let interviewQA = []
+    try {
+      interviewQA = JSON.parse(questionsData.choices[0].message.content)
+    } catch (error) {
+      console.error('Error parsing interview Q&A:', error)
+      // Fallback format if parsing fails
+      interviewQA = [{
+        question: questionsData.choices[0].message.content,
+        answer: "Please regenerate interview questions and answers."
+      }]
+    }
 
     return new Response(
       JSON.stringify({ 

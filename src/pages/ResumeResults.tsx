@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/auth";
 import { Confetti } from "@/components/Confetti";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -20,6 +20,7 @@ export default function ResumeResults() {
     location.state?.generatedResume || ""
   );
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
   const [resumeTitle, setResumeTitle] = useState("");
   const [downloadFormat, setDownloadFormat] = useState("docx");
 
@@ -64,14 +65,15 @@ export default function ResumeResults() {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     const element = document.createElement("a");
     const file = new Blob([generatedResume], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
-    element.download = `optimized-resume.${downloadFormat}`;
+    element.download = `${resumeTitle || 'optimized-resume'}.${downloadFormat}`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    setDownloadDialogOpen(false);
   };
 
   return (
@@ -83,18 +85,8 @@ export default function ResumeResults() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Optimized Resume</h2>
               <div className="space-x-2">
-                <Select value={downloadFormat} onValueChange={setDownloadFormat}>
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="Format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="docx">Word</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="txt">Text</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Button variant="outline" onClick={() => setSaveDialogOpen(true)}>Save</Button>
-                <Button variant="outline" onClick={handleDownload}>Download</Button>
+                <Button variant="outline" onClick={() => setDownloadDialogOpen(true)}>Download</Button>
               </div>
             </div>
             <Textarea
@@ -108,14 +100,13 @@ export default function ResumeResults() {
             <h2 className="text-2xl font-semibold mb-6">Interview Questions & Answers</h2>
             <div className="space-y-4">
               {interviewQA.map((qa, index) => (
-                <Card key={index}>
-                  <CardHeader>
-                    <h3 className="font-semibold">Question {index + 1}</h3>
+                <Card key={index} className="animate-fade-up" style={{ animationDelay: `${index * 100}ms` }}>
+                  <CardHeader className="pb-2">
+                    <h3 className="font-semibold text-lg">Question {index + 1}</h3>
                     <p className="text-gray-700">{qa.question}</p>
                   </CardHeader>
                   <CardContent>
-                    <h4 className="font-medium mb-2">Answer:</h4>
-                    <p className="text-gray-600">{qa.answer}</p>
+                    <p className="text-gray-600 whitespace-pre-wrap">{qa.answer}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -139,6 +130,38 @@ export default function ResumeResults() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={downloadDialogOpen} onOpenChange={setDownloadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Download Resume</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Select Format</label>
+              <Select value={downloadFormat} onValueChange={setDownloadFormat}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="docx">Word Document (.docx)</SelectItem>
+                  <SelectItem value="pdf">PDF Document (.pdf)</SelectItem>
+                  <SelectItem value="txt">Text File (.txt)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Input
+              placeholder="Enter file name (optional)"
+              value={resumeTitle}
+              onChange={(e) => setResumeTitle(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDownloadDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleDownload}>Download</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

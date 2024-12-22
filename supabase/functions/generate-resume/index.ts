@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { resume, jobDescription } = await req.json()
 
-    // Generate the optimized resume
+    // Generate the optimized resume with clear formatting instructions
     const resumeResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -26,19 +26,22 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert resume writer. Format the resume in a clean, professional way. Do not use any stars, asterisks, or dashes. Use proper spacing and clear section headers. Use line breaks for separation instead of special characters.'
+            content: `You are an expert resume writer. Format the resume in a clean, professional way with these strict rules:
+            1. Do not use any asterisks (*), stars, or dashes (-)
+            2. Use clear section headers in title case (e.g., "Work Experience", "Education")
+            3. Use proper spacing between sections
+            4. Use standard bullet points (•) for lists if needed
+            5. Keep the formatting minimal and professional`
           },
           {
             role: 'user',
-            content: `Please optimize this resume for the given job description. Make it more relevant and impactful while maintaining a clean, professional format without any special characters or symbols.
+            content: `Please optimize this resume for the given job description, following the formatting rules strictly:
             
             Resume:
             ${resume}
             
             Job Description:
-            ${jobDescription}
-            
-            Please provide an optimized version of the resume that better aligns with this job description.`
+            ${jobDescription}`
           }
         ],
       }),
@@ -59,11 +62,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Generate 5 specific interview questions with detailed answers based on the resume and job description. Each question should be relevant to the candidate\'s experience and the job requirements. Format as an array of objects with "question" and "answer" fields.'
+            content: 'Generate 5 specific interview questions with detailed answers based on the resume and job description. Each question should be relevant to the candidate\'s experience and the job requirements.'
           },
           {
             role: 'user',
-            content: `Based on this resume and job description, generate 5 relevant interview questions with detailed answers that would help prepare for the interview.
+            content: `Based on this resume and job description, generate 5 relevant interview questions with detailed answers:
             
             Resume:
             ${generatedResume}
@@ -71,24 +74,23 @@ serve(async (req) => {
             Job Description:
             ${jobDescription}
             
-            Format the response as a JSON array of objects, each with "question" and "answer" fields.`
+            Format each QA pair as a complete, detailed response.`
           }
         ],
       }),
     })
 
     const questionsData = await questionsResponse.json()
-    let interviewQA = []
-    try {
-      interviewQA = JSON.parse(questionsData.choices[0].message.content)
-    } catch (error) {
-      console.error('Error parsing interview Q&A:', error)
-      // Fallback format if parsing fails
-      interviewQA = [{
-        question: questionsData.choices[0].message.content,
-        answer: "Please regenerate interview questions and answers."
-      }]
-    }
+    const interviewQA = questionsData.choices[0].message.content
+      .split(/\d+\.\s+/)
+      .filter(qa => qa.trim())
+      .map(qa => {
+        const [question, ...answerParts] = qa.split(/\nAnswer:|\nA:/);
+        return {
+          question: question.trim(),
+          answer: answerParts.join('').trim()
+        };
+      });
 
     return new Response(
       JSON.stringify({ 

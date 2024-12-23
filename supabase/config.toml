@@ -1,1 +1,2 @@
-project_id = "txbvgwrqqznojrpxurss"
+[functions.generate-resume]
+verify_jwt = false

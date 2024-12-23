@@ -17,16 +17,11 @@ serve(async (req) => {
     const { resume, jobDescription } = await req.json();
 
     if (!resume || !jobDescription) {
-      console.error('Missing required fields');
       throw new Error('Resume and job description are required');
     }
 
-    console.log('Resume length:', resume.length);
-    console.log('Job description length:', jobDescription.length);
-
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      console.error('OpenAI API key not found');
       throw new Error('OpenAI API key not configured');
     }
 
@@ -42,45 +37,18 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert resume writer. Your task is to completely rewrite and optimize the resume to match the job description. Follow these rules exactly:
-
-1. Create a completely new version of the resume
-2. Remove ALL special characters (*, -, •)
-3. Use these exact section headers:
-   - Professional Experience
-   - Education
-   - Skills
-   - Certifications (if any)
-4. Use one blank line between sections
-5. Format each bullet point as a complete sentence starting with an action verb
-6. Number each point (1. 2. 3. etc)
-7. Focus heavily on matching the job requirements
-8. Use clear, professional language
-9. Do not include any formatting or markdown
-10. Ensure the output is completely different from the input
-11. Optimize every point to highlight relevant experience
-
-Format the resume exactly like this example:
-
-Professional Experience
-
-1. Led development of enterprise software platform resulting in 40% increase in efficiency.
-2. Implemented automated testing framework reducing bug reports by 60%.
-
-Skills
-
-1. Advanced expertise in React and TypeScript development.
-2. Strong background in cloud infrastructure and AWS services.`
+            content: `You are an expert resume writer. Your task is to optimize the resume to match the job description perfectly. Follow these rules:
+1. Create a clean, professional version of the resume
+2. Remove ALL special characters (*, -, •) and replace with numbers for lists
+3. Use these exact section headers: Professional Experience, Education, Skills, Certifications (if applicable)
+4. Format each bullet point as a complete sentence starting with an action verb
+5. Focus on matching keywords from the job description
+6. Keep the output clean and simple - no markdown or special formatting
+7. Number each point (1. 2. 3. etc)`
           },
           {
             role: 'user',
-            content: `Original Resume:
-${resume}
-
-Job Description:
-${jobDescription}
-
-Create a completely new optimized version of this resume that matches the job requirements. Remove ALL special characters and use only numbers and periods for lists.`
+            content: `Original Resume:\n${resume}\n\nJob Description:\n${jobDescription}\n\nPlease create an optimized version of this resume that matches the job requirements. Use only numbers for lists, no special characters.`
           }
         ],
         temperature: 0.7,

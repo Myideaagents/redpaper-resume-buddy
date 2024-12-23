@@ -13,8 +13,7 @@ serve(async (req) => {
 
   try {
     const { resume, jobDescription } = await req.json()
-    console.log('Received request with resume length:', resume.length)
-    console.log('Received request with job description length:', jobDescription.length)
+    console.log('Processing resume optimization request')
 
     // Generate the optimized resume
     const resumeResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -24,29 +23,32 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: `You are an expert resume optimizer. Your task is to rewrite the resume in a clean, professional format following these strict rules:
-            1. NEVER use asterisks (*), dashes (-), or any special characters for formatting
-            2. Use clear section headers in title case like "Professional Experience", "Education", "Skills"
+            content: `You are a professional resume optimizer. Your task is to rewrite the resume to match the job description while following these strict rules:
+            1. DO NOT use any special characters like asterisks (*), dashes (-), or bullet points
+            2. Use clear section headers in title case (e.g., "Professional Experience", "Education", "Skills")
             3. Use one blank line between sections
-            4. Use standard bullet points (•) for experience items
-            5. Keep formatting minimal and professional
-            6. Focus on matching skills and experience to the job description
-            7. Use clear, action-oriented language
-            8. Return ONLY the formatted resume text, no explanations or additional text`
+            4. Format experience items as complete sentences
+            5. Focus on matching skills and experience to the job description
+            6. Use clear, action-oriented language
+            7. Return ONLY the formatted resume text
+            8. Use numbers and periods for lists (1. 2. 3. etc)
+            9. Keep formatting minimal and clean`
           },
           {
             role: 'user',
-            content: `Please optimize this resume for the following job description, following the formatting rules strictly:
+            content: `Please optimize this resume for the following job description:
 
             Resume:
             ${resume}
             
             Job Description:
-            ${jobDescription}`
+            ${jobDescription}
+            
+            Remember: Do not use any special characters, bullet points, or dashes. Use numbers and periods for lists.`
           }
         ],
         temperature: 0.7,
@@ -54,81 +56,26 @@ serve(async (req) => {
     })
 
     if (!resumeResponse.ok) {
-      const error = await resumeResponse.text()
-      console.error('OpenAI resume generation error:', error)
+      console.error('OpenAI resume generation error:', await resumeResponse.text())
       throw new Error('Failed to generate resume')
     }
 
     const resumeData = await resumeResponse.json()
-    console.log('Generated optimized resume')
+    console.log('Successfully generated optimized resume')
     const generatedResume = resumeData.choices[0].message.content
 
-    // Generate interview questions with answers
-    const questionsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'Generate exactly 5 specific interview questions with detailed answers based on the resume and job description. Each question should focus on relevant experience and skills from the resume that match the job requirements. Format each Q&A pair clearly.'
-          },
-          {
-            role: 'user',
-            content: `Based on this resume and job description, generate 5 relevant interview questions with detailed answers:
-            
-            Resume:
-            ${generatedResume}
-            
-            Job Description:
-            ${jobDescription}
-            
-            Generate exactly 5 questions with answers, focusing on relevant skills and experience. Format each as "Question: [question text]" followed by "Answer: [detailed answer]"`
-          }
-        ],
-        temperature: 0.7,
-      }),
-    })
-
-    if (!questionsResponse.ok) {
-      const error = await questionsResponse.text()
-      console.error('OpenAI questions generation error:', error)
-      throw new Error('Failed to generate interview questions')
-    }
-
-    const questionsData = await questionsResponse.json()
-    console.log('Generated interview questions and answers')
-
-    // Process the response to extract questions and answers
-    const qaContent = questionsData.choices[0].message.content
-    const qaArray = qaContent.split(/Question:/)
-      .filter(Boolean)
-      .map(qa => {
-        const [question, ...answerParts] = qa.split(/Answer:/)
-        return {
-          question: question.trim(),
-          answer: answerParts.join('Answer:').trim()
-        }
-      })
-      .slice(0, 5)
-
-    console.log('Number of QA pairs generated:', qaArray.length)
-
+    // Return just the generated resume for now
     return new Response(
       JSON.stringify({ 
         generatedResume,
-        interviewQA: qaArray
+        interviewQA: [] // We'll handle this separately through a new endpoint
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Error in generate-resume function:', error)
     return new Response(
-      JSON.stringify({ error: error.message || 'Failed to generate resume and questions' }),
+      JSON.stringify({ error: error.message || 'Failed to generate resume' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

@@ -49,14 +49,32 @@ export const ResumeEditor = ({
               onChange={(e) => onJobDescriptionChange(e.target.value)}
             />
           </div>
-          <Button 
-            className="w-full bg-accent hover:bg-accent/90"
-            onClick={onGenerate}
-            disabled={isGenerating}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
-            {isGenerating ? 'Generating...' : 'Generate Optimized Resume'}
-          </Button>
+          <div className="relative">
+            <Button 
+              className="w-full bg-accent hover:bg-accent/90 relative overflow-hidden group"
+              onClick={onGenerate}
+              disabled={isGenerating}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+              {isGenerating ? 'Generating...' : 'Generate Optimized Resume'}
+              <svg
+                className="absolute left-0 w-full h-full pointer-events-none"
+                style={{ top: '-100%' }}
+              >
+                <circle
+                  className={`${isGenerating ? 'animate-dash' : ''} stroke-white/20 fill-none`}
+                  strokeWidth="2"
+                  r="15"
+                  cx="50%"
+                  cy="50%"
+                  strokeDasharray="30"
+                  strokeLinecap="round"
+                  transform="rotate(0)"
+                >
+                </circle>
+              </svg>
+            </Button>
+          </div>
         </div>
 
         {generatedResume && (

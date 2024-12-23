@@ -39,11 +39,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a professional resume optimizer. Your task is to rewrite the resume to match the job description while following these strict rules:
-              1. NEVER use any special characters like asterisks (*), dashes (-), or bullet points
+            content: `You are a professional resume optimizer. Your task is to completely rewrite and optimize the resume to match the job description while following these strict rules:
+              1. Remove ALL special characters including asterisks (*), dashes (-), and bullet points
               2. Use clear section headers in title case (e.g., "Professional Experience", "Education", "Skills")
               3. Use one blank line between sections
-              4. Format experience items as complete sentences
+              4. Format experience items as complete sentences starting with action verbs
               5. Focus on matching skills and experience to the job description
               6. Use clear, action-oriented language
               7. Return ONLY the formatted resume text
@@ -51,7 +51,8 @@ serve(async (req) => {
               9. Keep formatting minimal and clean
               10. Do not include any markdown or special formatting
               11. Start each experience point with a number followed by a period
-              12. Remove any stars, asterisks, or dashes from the input resume`
+              12. IMPORTANT: The output must be completely different from the input resume - do not return the same text
+              13. Optimize and rewrite every bullet point to match the job requirements`
           },
           {
             role: 'user',
@@ -63,7 +64,7 @@ serve(async (req) => {
             Job Description:
             ${jobDescription}
             
-            Remember: Do not use any special characters, bullet points, or dashes. Use numbers and periods for lists.`
+            Remember: Create a completely new version of the resume, optimized for this specific job. Do not return the same text. Remove all special characters and use only numbers and periods for lists.`
           }
         ],
         temperature: 0.7,
@@ -89,7 +90,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         generatedResume,
-        interviewQA: [] // We'll handle this separately
+        success: true
       }),
       { 
         headers: { 

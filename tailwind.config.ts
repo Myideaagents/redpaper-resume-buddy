@@ -82,13 +82,14 @@ export default {
         "dash": {
           "to": {
             strokeDashoffset: "-30",
+            transform: "rotate(360deg)",
           }
         }
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-down": "fade-down 0.5s ease-out",
-        "dash": "dash 20s linear infinite",
+        "dash": "dash 1.5s linear infinite",
       },
     },
   },

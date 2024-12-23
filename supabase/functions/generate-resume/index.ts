@@ -1,25 +1,37 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { resume, jobDescription } = await req.json()
-    console.log('Processing resume optimization request')
+    const { resume, jobDescription } = await req.json();
+    console.log('Processing resume optimization request');
+    console.log('Resume length:', resume?.length);
+    console.log('Job description length:', jobDescription?.length);
 
-    // Generate the optimized resume
-    const resumeResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    if (!resume || !jobDescription) {
+      throw new Error('Missing resume or job description');
+    }
+
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    console.log('Calling OpenAI API...');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -28,15 +40,18 @@ serve(async (req) => {
           {
             role: 'system',
             content: `You are a professional resume optimizer. Your task is to rewrite the resume to match the job description while following these strict rules:
-            1. DO NOT use any special characters like asterisks (*), dashes (-), or bullet points
-            2. Use clear section headers in title case (e.g., "Professional Experience", "Education", "Skills")
-            3. Use one blank line between sections
-            4. Format experience items as complete sentences
-            5. Focus on matching skills and experience to the job description
-            6. Use clear, action-oriented language
-            7. Return ONLY the formatted resume text
-            8. Use numbers and periods for lists (1. 2. 3. etc)
-            9. Keep formatting minimal and clean`
+              1. NEVER use any special characters like asterisks (*), dashes (-), or bullet points
+              2. Use clear section headers in title case (e.g., "Professional Experience", "Education", "Skills")
+              3. Use one blank line between sections
+              4. Format experience items as complete sentences
+              5. Focus on matching skills and experience to the job description
+              6. Use clear, action-oriented language
+              7. Return ONLY the formatted resume text
+              8. Use numbers and periods for lists (1. 2. 3. etc)
+              9. Keep formatting minimal and clean
+              10. Do not include any markdown or special formatting
+              11. Start each experience point with a number followed by a period
+              12. Remove any stars, asterisks, or dashes from the input resume`
           },
           {
             role: 'user',
@@ -52,31 +67,51 @@ serve(async (req) => {
           }
         ],
         temperature: 0.7,
+        max_tokens: 2000,
       }),
-    })
+    });
 
-    if (!resumeResponse.ok) {
-      console.error('OpenAI resume generation error:', await resumeResponse.text())
-      throw new Error('Failed to generate resume')
+    if (!response.ok) {
+      console.error('OpenAI API error:', await response.text());
+      throw new Error('Failed to generate resume from OpenAI');
     }
 
-    const resumeData = await resumeResponse.json()
-    console.log('Successfully generated optimized resume')
-    const generatedResume = resumeData.choices[0].message.content
+    const data = await response.json();
+    console.log('Successfully received OpenAI response');
+    
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from OpenAI');
+    }
 
-    // Return just the generated resume for now
+    const generatedResume = data.choices[0].message.content;
+    console.log('Generated resume length:', generatedResume.length);
+
     return new Response(
       JSON.stringify({ 
         generatedResume,
-        interviewQA: [] // We'll handle this separately through a new endpoint
+        interviewQA: [] // We'll handle this separately
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
   } catch (error) {
-    console.error('Error in generate-resume function:', error)
+    console.error('Error in generate-resume function:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Failed to generate resume' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+      JSON.stringify({ 
+        error: error.message || 'Failed to generate resume',
+        details: error.toString()
+      }),
+      { 
+        status: 500,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
   }
-})
+});

@@ -12,24 +12,30 @@ export type Database = {
       profiles: {
         Row: {
           experience: string | null
+          expertise: string | null
           full_name: string | null
           id: string
+          interests: string | null
           linkedin: string | null
           phone: string | null
           updated_at: string
         }
         Insert: {
           experience?: string | null
+          expertise?: string | null
           full_name?: string | null
           id: string
+          interests?: string | null
           linkedin?: string | null
           phone?: string | null
           updated_at?: string
         }
         Update: {
           experience?: string | null
+          expertise?: string | null
           full_name?: string | null
           id?: string
+          interests?: string | null
           linkedin?: string | null
           phone?: string | null
           updated_at?: string

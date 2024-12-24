@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/auth";
-import { Textarea } from "@/components/ui/textarea";
 
 export default function Profile() {
   const [profile, setProfile] = useState({
@@ -101,7 +100,7 @@ export default function Profile() {
                   Full Name
                 </label>
                 <Input
-                  value={profile.full_name}
+                  value={profile.full_name || ""}
                   onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                   placeholder="John Doe"
                 />
@@ -112,7 +111,7 @@ export default function Profile() {
                   Phone Number
                 </label>
                 <Input
-                  value={profile.phone}
+                  value={profile.phone || ""}
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                   placeholder="+1 (555) 000-0000"
                 />
@@ -123,7 +122,7 @@ export default function Profile() {
                   LinkedIn Profile
                 </label>
                 <Input
-                  value={profile.linkedin}
+                  value={profile.linkedin || ""}
                   onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })}
                   placeholder="https://linkedin.com/in/johndoe"
                 />
@@ -134,7 +133,7 @@ export default function Profile() {
                   Years of Experience
                 </label>
                 <Input
-                  value={profile.experience}
+                  value={profile.experience || ""}
                   onChange={(e) => setProfile({ ...profile, experience: e.target.value })}
                   placeholder="5 years"
                 />
@@ -146,12 +145,14 @@ export default function Profile() {
                 </label>
                 <div className="space-y-2">
                   {profile.expertise.map((item, index) => (
-                    <Input
-                      key={`expertise-${index}`}
-                      value={item}
-                      onChange={(e) => handleExpertiseChange(index, e.target.value)}
-                      placeholder={`Expertise ${index + 1}`}
-                    />
+                    <div key={`expertise-${index}`} className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-500 w-8">{index + 1}.</span>
+                      <Input
+                        value={item}
+                        onChange={(e) => handleExpertiseChange(index, e.target.value)}
+                        placeholder={`Enter expertise #${index + 1}`}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -162,12 +163,14 @@ export default function Profile() {
                 </label>
                 <div className="space-y-2">
                   {profile.interests.map((item, index) => (
-                    <Input
-                      key={`interest-${index}`}
-                      value={item}
-                      onChange={(e) => handleInterestChange(index, e.target.value)}
-                      placeholder={`Interest ${index + 1}`}
-                    />
+                    <div key={`interest-${index}`} className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-500 w-8">{index + 1}.</span>
+                      <Input
+                        value={item}
+                        onChange={(e) => handleInterestChange(index, e.target.value)}
+                        placeholder={`Enter interest #${index + 1}`}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>

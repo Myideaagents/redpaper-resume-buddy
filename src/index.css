@@ -37,3 +37,30 @@
     font-family: 'Inter', sans-serif;
   }
 }
+
+/* Datalist dropdown styling */
+input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+datalist {
+  position: absolute;
+  max-height: 20em;
+  border: 0 none;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+datalist option {
+  font-size: 0.8em;
+  padding: 0.3em 1em;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 0.3em;
+  margin-bottom: 0.2em;
+}
+
+datalist option:hover {
+  color: #fff;
+  background-color: #1a365d;
+}

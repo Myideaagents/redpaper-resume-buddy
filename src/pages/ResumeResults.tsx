@@ -72,7 +72,6 @@ export default function ResumeResults() {
         return;
       }
 
-      // Check if user has reached the limit of 5 resumes
       const { data: existingResumes, error: countError } = await supabase
         .from('resumes')
         .select('id')
@@ -95,7 +94,6 @@ export default function ResumeResults() {
         job_description: location.state.jobDescription,
         generated_resume: generatedResume,
         title: resumeTitle,
-        interview_qa: interviewQA,
       });
 
       if (error) throw error;
@@ -145,7 +143,7 @@ export default function ResumeResults() {
     <div className="flex h-screen bg-gray-50">
       <ResumeSidebar />
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 gap-6 p-6">
+        <div className="p-6 space-y-6">
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Optimized Resume</h2>
@@ -169,7 +167,7 @@ export default function ResumeResults() {
               </div>
             </div>
             <Textarea
-              className="h-[calc(50vh-100px)] resize-none"
+              className="h-[calc(100vh-200px)] resize-none"
               value={generatedResume}
               onChange={(e) => setGeneratedResume(e.target.value)}
             />

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/auth";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Profile() {
   const [profile, setProfile] = useState({
@@ -11,6 +12,8 @@ export default function Profile() {
     phone: "",
     linkedin: "",
     experience: "",
+    expertise: ["", "", "", "", ""],
+    interests: ["", "", "", "", ""],
   });
   const { toast } = useToast();
 
@@ -30,7 +33,13 @@ export default function Profile() {
         .single();
 
       if (error) throw error;
-      if (data) setProfile(data);
+      if (data) {
+        setProfile({
+          ...data,
+          expertise: data.expertise ? JSON.parse(data.expertise) : ["", "", "", "", ""],
+          interests: data.interests ? JSON.parse(data.interests) : ["", "", "", "", ""],
+        });
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
     }
@@ -46,6 +55,8 @@ export default function Profile() {
         .upsert({
           id: user.id,
           ...profile,
+          expertise: JSON.stringify(profile.expertise),
+          interests: JSON.stringify(profile.interests),
           updated_at: new Date(),
         });
 
@@ -62,6 +73,18 @@ export default function Profile() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleExpertiseChange = (index: number, value: string) => {
+    const newExpertise = [...profile.expertise];
+    newExpertise[index] = value;
+    setProfile({ ...profile, expertise: newExpertise });
+  };
+
+  const handleInterestChange = (index: number, value: string) => {
+    const newInterests = [...profile.interests];
+    newInterests[index] = value;
+    setProfile({ ...profile, interests: newInterests });
   };
 
   return (
@@ -115,6 +138,38 @@ export default function Profile() {
                   onChange={(e) => setProfile({ ...profile, experience: e.target.value })}
                   placeholder="5 years"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Areas of Expertise (List 1-5 in order of proficiency)
+                </label>
+                <div className="space-y-2">
+                  {profile.expertise.map((item, index) => (
+                    <Input
+                      key={`expertise-${index}`}
+                      value={item}
+                      onChange={(e) => handleExpertiseChange(index, e.target.value)}
+                      placeholder={`Expertise ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Areas of Interest (List 1-5 in order of preference)
+                </label>
+                <div className="space-y-2">
+                  {profile.interests.map((item, index) => (
+                    <Input
+                      key={`interest-${index}`}
+                      value={item}
+                      onChange={(e) => handleInterestChange(index, e.target.value)}
+                      placeholder={`Interest ${index + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
 
               <Button

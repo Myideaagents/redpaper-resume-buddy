@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/auth";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { expertiseSuggestions, interestSuggestions } from "@/lib/suggestions";
 
 export default function Profile() {
   const [profile, setProfile] = useState({
@@ -14,6 +19,8 @@ export default function Profile() {
     expertise: ["", "", "", "", ""],
     interests: ["", "", "", "", ""],
   });
+  const [openExpertise, setOpenExpertise] = useState(Array(5).fill(false));
+  const [openInterests, setOpenInterests] = useState(Array(5).fill(false));
   const { toast } = useToast();
 
   useEffect(() => {
@@ -86,6 +93,18 @@ export default function Profile() {
     setProfile({ ...profile, interests: newInterests });
   };
 
+  const toggleExpertise = (index: number) => {
+    const newOpen = [...openExpertise];
+    newOpen[index] = !newOpen[index];
+    setOpenExpertise(newOpen);
+  };
+
+  const toggleInterests = (index: number) => {
+    const newOpen = [...openInterests];
+    newOpen[index] = !newOpen[index];
+    setOpenInterests(newOpen);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       <ResumeSidebar />
@@ -141,17 +160,51 @@ export default function Profile() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Areas of Expertise (List 1-5 in order of proficiency)
+                  Areas of Expertise (Things you know how to do)
                 </label>
                 <div className="space-y-2">
                   {profile.expertise.map((item, index) => (
                     <div key={`expertise-${index}`} className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-500 w-8">{index + 1}.</span>
-                      <Input
-                        value={item}
-                        onChange={(e) => handleExpertiseChange(index, e.target.value)}
-                        placeholder={`Enter expertise #${index + 1}`}
-                      />
+                      <Popover open={openExpertise[index]} onOpenChange={() => toggleExpertise(index)}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openExpertise[index]}
+                            className="w-full justify-between"
+                          >
+                            {item || `Select expertise #${index + 1}`}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder={`Search expertise...`} />
+                            <CommandEmpty>No expertise found.</CommandEmpty>
+                            <CommandGroup>
+                              {expertiseSuggestions.map((suggestion) => (
+                                <CommandItem
+                                  key={suggestion}
+                                  value={suggestion}
+                                  onSelect={() => {
+                                    handleExpertiseChange(index, suggestion);
+                                    toggleExpertise(index);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      item === suggestion ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {suggestion}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   ))}
                 </div>
@@ -159,17 +212,51 @@ export default function Profile() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Areas of Interest (List 1-5 in order of preference)
+                  Areas of Interest (Things you want to do)
                 </label>
                 <div className="space-y-2">
                   {profile.interests.map((item, index) => (
                     <div key={`interest-${index}`} className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-500 w-8">{index + 1}.</span>
-                      <Input
-                        value={item}
-                        onChange={(e) => handleInterestChange(index, e.target.value)}
-                        placeholder={`Enter interest #${index + 1}`}
-                      />
+                      <Popover open={openInterests[index]} onOpenChange={() => toggleInterests(index)}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openInterests[index]}
+                            className="w-full justify-between"
+                          >
+                            {item || `Select interest #${index + 1}`}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder={`Search interests...`} />
+                            <CommandEmpty>No interest found.</CommandEmpty>
+                            <CommandGroup>
+                              {interestSuggestions.map((suggestion) => (
+                                <CommandItem
+                                  key={suggestion}
+                                  value={suggestion}
+                                  onSelect={() => {
+                                    handleInterestChange(index, suggestion);
+                                    toggleInterests(index);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      item === suggestion ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {suggestion}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   ))}
                 </div>

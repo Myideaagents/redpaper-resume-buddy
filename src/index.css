@@ -1,66 +1,56 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221 47% 11%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.75rem;
+    --background: #f9fafb;
+    --foreground: #111827;
+    --accent: #3b82f6;
+    --border: #e5e7eb;
+    --border-hover: #d1d5db;
+    --border-active: #3b82f6;
+    --border-focus: #3b82f6;
+    --border-muted: #e5e7eb;
+    --text-muted: #6b7280;
+    --text-accent: #3b82f6;
   }
-
+}
+ 
+@layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
   }
 }
 
-/* Datalist dropdown styling */
-input::-webkit-calendar-picker-indicator {
-  display: none !important;
-}
-
+/* Custom datalist styling */
 datalist {
-  position: absolute;
-  max-height: 20em;
-  border: 0 none;
-  overflow-x: hidden;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
   overflow-y: auto;
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
 }
 
 datalist option {
-  font-size: 0.8em;
-  padding: 0.3em 1em;
-  background-color: #fff;
+  padding: 0.5rem 1rem;
   cursor: pointer;
-  border-radius: 0.3em;
-  margin-bottom: 0.2em;
+  transition: background-color 0.2s;
 }
 
 datalist option:hover {
-  color: #fff;
-  background-color: #1a365d;
+  background-color: #f3f4f6;
+}
+
+/* Hide default datalist arrow */
+input::-webkit-calendar-picker-indicator {
+  display: none !important;
 }

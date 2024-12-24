@@ -40,7 +40,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -97,8 +97,9 @@ serve(async (req) => {
     console.error('Error in generate-resume function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to generate resume',
-        details: error.toString()
+        error: 'Failed to generate resume',
+        details: error.toString(),
+        message: error.message
       }),
       { 
         status: 500,

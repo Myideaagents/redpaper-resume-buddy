@@ -13,32 +13,36 @@ export const Navbar = () => {
   }, []);
 
   return (
-    <nav className="fixed top-0 w-full bg-white z-50 border-b">
+    <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-200">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          <span className="text-3xl font-bold text-accent">RedPaper</span>
+          <span className="text-3xl font-semibold tracking-tight text-accent">RedPaper</span>
         </Link>
         <div className="hidden md:flex items-center space-x-8">
-          <Link to="/templates" className="text-gray-600 hover:text-accent">Templates</Link>
-          <Link to="/features" className="text-gray-600 hover:text-accent">Features</Link>
-          <Link to="/pricing" className="text-gray-600 hover:text-accent">Pricing</Link>
-          <Link to="/about" className="text-gray-600 hover:text-accent">About</Link>
+          <Link to="/templates" className="text-gray-600 hover:text-accent transition-colors duration-200">Templates</Link>
+          <Link to="/features" className="text-gray-600 hover:text-accent transition-colors duration-200">Features</Link>
+          <Link to="/pricing" className="text-gray-600 hover:text-accent transition-colors duration-200">Pricing</Link>
+          <Link to="/about" className="text-gray-600 hover:text-accent transition-colors duration-200">About</Link>
         </div>
         <div className="flex items-center space-x-4">
           {!user ? (
             <>
               <Link to="/signin">
-                <Button variant="outline" className="border-accent text-accent hover:bg-accent/10">
-                  Login
-                </Button>
+                <button className="text-accent hover:text-accent/90 font-medium px-5 py-2 rounded-full transition-colors duration-200">
+                  Sign In
+                </button>
               </Link>
               <Link to="/signup">
-                <Button className="bg-accent hover:bg-accent/90">Sign Up</Button>
+                <button className="apple-button">
+                  Sign Up
+                </button>
               </Link>
             </>
           ) : (
             <Link to="/dashboard">
-              <Button className="bg-accent hover:bg-accent/90">Dashboard</Button>
+              <button className="apple-button">
+                Dashboard
+              </button>
             </Link>
           )}
         </div>
